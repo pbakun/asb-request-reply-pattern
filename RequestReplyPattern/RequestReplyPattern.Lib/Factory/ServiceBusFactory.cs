@@ -12,7 +12,6 @@ namespace RequestReplyPattern.Lib.Factory
         ServiceBusSessionProcessor CreateSessionProcessor(string queueName);
         ServiceBusProcessor CreateProcessor(string queueName);
         Task<ServiceBusSessionReceiver> CreateSessionReceiver(string queueName, string sessionId);
-        Task<ServiceBusSessionReceiver> CreateAnySessionReceiver(string queueName);
     }
     public class ServiceBusFactory : IServiceBusFactory
     {
@@ -42,17 +41,7 @@ namespace RequestReplyPattern.Lib.Factory
                 throw new ArgumentNullException(queueName);
             return _receiversCollection.GetOrAdd(queueName, name => _client.CreateReceiver(name));
         }
-        public async Task<ServiceBusSessionReceiver> CreateAnySessionReceiver(string queueName)
-        {
-            if (string.IsNullOrEmpty(queueName))
-                throw new ArgumentNullException(queueName);
 
-            var receiverOptions = new ServiceBusSessionReceiverOptions
-            {
-                ReceiveMode = ServiceBusReceiveMode.ReceiveAndDelete
-            };
-            return await _client.AcceptNextSessionAsync(queueName, receiverOptions);
-        }
         public async Task<ServiceBusSessionReceiver> CreateSessionReceiver(string queueName, string sessionId)
         {
             if (string.IsNullOrEmpty(queueName))

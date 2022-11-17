@@ -25,7 +25,7 @@ namespace RequestReplyPattern.Lib
         {
             _logger.LogInformation("Received message: {0}", jsonMessage?.ToString());
             await SetSessionState(queueName, sessionId, MessageState.Processing);
-            var message = JsonSerializer.Serialize(new Message
+            string message = JsonSerializer.Serialize(new Message
             {
                 Content = $"Thanks for message with session id {sessionId}! This is my response"
             });

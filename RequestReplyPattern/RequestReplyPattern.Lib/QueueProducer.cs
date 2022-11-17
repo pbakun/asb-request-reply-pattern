@@ -30,15 +30,15 @@ namespace RequestReplyPattern.Lib
 
         public async Task<string> GetMessageResponse(string messageId)
         {
-            await using var receiver = await _serviceBusFactory.CreateSessionReceiver(_queueOptions.ReplyQueueName, messageId);
+            await using ServiceBusSessionReceiver receiver = await _serviceBusFactory.CreateSessionReceiver(_queueOptions.ReplyQueueName, messageId);
             _logger.LogInformation($"Attempt to receive message with id {messageId}");
-            var receivedMessage = await receiver.ReceiveMessageAsync(TimeSpan.FromSeconds(5));
+            ServiceBusReceivedMessage receivedMessage = await receiver.ReceiveMessageAsync(TimeSpan.FromSeconds(5));
             if (receivedMessage == null)
                 return string.Empty;
 
             _logger.LogInformation("Received response from queue");
             await receiver.SetSessionStateAsync(null);
-            var responseMessage = receivedMessage.Body.ToObjectFromJson<Message>(new System.Text.Json.JsonSerializerOptions());
+            Message responseMessage = receivedMessage.Body.ToObjectFromJson<Message>(new System.Text.Json.JsonSerializerOptions());
             return responseMessage.Content;
         }
 

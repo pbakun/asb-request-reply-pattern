@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Azure.Messaging.ServiceBus;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -28,7 +29,7 @@ namespace RequestReplyPattern.Consumer
         }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            var processor = _serviceBusFactory.CreateProcessor(_queueOptions.RequestQueueName);
+            ServiceBusProcessor processor = _serviceBusFactory.CreateProcessor(_queueOptions.RequestQueueName);
 
             processor.ProcessMessageAsync += Processor_ProcessMessageAsync;
             processor.ProcessErrorAsync += Processor_ProcessErrorAsync;
@@ -36,15 +37,15 @@ namespace RequestReplyPattern.Consumer
             await processor.StartProcessingAsync(stoppingToken);
         }
 
-        private Task Processor_ProcessErrorAsync(Azure.Messaging.ServiceBus.ProcessErrorEventArgs arg)
+        private Task Processor_ProcessErrorAsync(ProcessErrorEventArgs arg)
         {
             _logger.LogError("Error in processed message");
             return Task.CompletedTask;
         }
 
-        private async Task Processor_ProcessMessageAsync(Azure.Messaging.ServiceBus.ProcessMessageEventArgs arg)
+        private async Task Processor_ProcessMessageAsync(ProcessMessageEventArgs arg)
         {
-            var message = arg.Message.Body.ToObjectFromJson<Message>(new JsonSerializerOptions());
+            Message message = arg.Message.Body.ToObjectFromJson<Message>(new JsonSerializerOptions());
             using (var scope = _scopeFactory.CreateScope())
             {
                 IQueueConsumer consumer = scope.ServiceProvider.GetRequiredService<IQueueConsumer>();
