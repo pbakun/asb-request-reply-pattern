@@ -54,7 +54,7 @@ namespace RequestReplyPattern.Lib
 
         private async Task SetSessionState(string queueName, string sessionId, MessageState messageState)
         {
-            await using var receiver = await _serviceBusFactory.CreateSessionReceiver(queueName, sessionId);
+            await using ServiceBusSessionReceiver receiver = await _serviceBusFactory.CreateSessionReceiver(queueName, sessionId);
             _logger.LogInformation("Setting state session id{0} to {1}", sessionId, messageState.ToString());
             var state = new BinaryData(messageState.ToString());
             await receiver.SetSessionStateAsync(state);
