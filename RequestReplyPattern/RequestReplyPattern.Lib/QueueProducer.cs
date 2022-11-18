@@ -60,12 +60,14 @@ namespace RequestReplyPattern.Lib
 
             var busMessage = new ServiceBusMessage(jsonMessage)
             {
-                MessageId = Guid.NewGuid().ToString(),
+                ReplyToSessionId = Guid.NewGuid().ToString(),
+                ReplyTo = _queueOptions.ReplyQueueName,
+                SessionId = Guid.NewGuid().ToString()
             };
 
-            _logger.LogInformation($"Send message with id {busMessage.MessageId}");
+            _logger.LogInformation($"Send message with id {busMessage.ReplyToSessionId}");
             await sender.SendMessageAsync(busMessage);
-            return busMessage.MessageId;
+            return busMessage.ReplyToSessionId;
         }
     }
 }

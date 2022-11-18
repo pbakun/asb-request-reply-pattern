@@ -31,31 +31,24 @@ namespace RequestReplyPattern.Lib
             });
 
             ServiceBusSender sender = _serviceBusFactory.CreateSender(queueName);
-            
+
             var busMessage = new ServiceBusMessage(message)
             {
-                SessionId = sessionId,
-                ReplyToSessionId = sessionId
+                SessionId = sessionId
             };
 
+            //delay to simulate longer running process
             await Task.Delay(TimeSpan.FromSeconds(15));
 
-            try
-            {
-                _logger.LogInformation("Sending response to messageId {0}", sessionId);
-                await sender.SendMessageAsync(busMessage);
-                await SetSessionState(queueName, sessionId, MessageState.Ready);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-            }
+            _logger.LogInformation("Sending response to messageId {0}", sessionId);
+            await sender.SendMessageAsync(busMessage);
+            await SetSessionState(queueName, sessionId, MessageState.Ready);
         }
 
         private async Task SetSessionState(string queueName, string sessionId, MessageState messageState)
         {
             await using ServiceBusSessionReceiver receiver = await _serviceBusFactory.CreateSessionReceiver(queueName, sessionId);
-            _logger.LogInformation("Setting state session id{0} to {1}", sessionId, messageState.ToString());
+            _logger.LogInformation("Setting state session id {0} to {1}", sessionId, messageState.ToString());
             var state = new BinaryData(messageState.ToString());
             await receiver.SetSessionStateAsync(state);
         }

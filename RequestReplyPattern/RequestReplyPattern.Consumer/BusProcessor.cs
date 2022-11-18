@@ -49,7 +49,7 @@ namespace RequestReplyPattern.Consumer
             using (var scope = _scopeFactory.CreateScope())
             {
                 IQueueConsumer consumer = scope.ServiceProvider.GetRequiredService<IQueueConsumer>();
-                await consumer.Consume(message, _queueOptions.ReplyQueueName, arg.Message.MessageId);
+                await consumer.Consume(message, arg.Message.ReplyTo, arg.Message.ReplyToSessionId);
                 await arg.CompleteMessageAsync(arg.Message);
             }
         }
